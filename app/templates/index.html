@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Check transaction{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div class="page-eyebrow">Single transaction</div>
+  <h1 class="page-title">Check a transaction</h1>
+  <p class="page-desc">
+    Enter a transaction's details below and Vigil will score it for fraud risk.
+    The V1-V28 fields are anonymized PCA features from the original dataset --
+    real customers never see these, so use a sample transaction to try the tool
+    with realistic values.
+  </p>
+</div>
+
+<div class="sample-strip">
+  <span class="sample-strip-text">New here? Load a real transaction from the test set instead of typing 30 numbers by hand.</span>
+  <button class="btn btn-ghost" type="button" onclick="loadSample('random')">Load random sample</button>
+  <button class="btn btn-ghost" type="button" onclick="loadSample('legit')">Load legit example</button>
+  <button class="btn btn-ghost" type="button" onclick="loadSample('fraud')">Load fraud example</button>
+</div>
+
+<div class="panel">
+  <h2 class="panel-title">Transaction details</h2>
+  <form id="predict-form">
+    <div class="form-grid">
+      <div class="field field-wide field-primary">
+        <label for="Amount">Amount ($)</label>
+        <input type="number" step="0.01" id="Amount" name="Amount" value="88.41" required>
+      </div>
+      <div class="field field-wide field-primary">
+        <label for="hour_of_day">Hour of day (0-23)</label>
+        <input type="number" min="0" max="23" id="hour_of_day" name="hour_of_day" value="12" required>
+      </div>
+      {% for i in range(1, 29) %}
+      <div class="field">
+        <label for="V{{ i }}">V{{ i }}</label>
+        <input type="number" step="any" id="V{{ i }}" name="V{{ i }}" value="0" required>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Check transaction</button>
+      <button type="button" class="btn btn-ghost" onclick="resetForm()">Reset fields</button>
+    </div>
+  </form>
+
+  <div id="result" class="result">
+    <div class="result-head">
+      <span id="result-verdict" class="result-verdict">--</span>
+      <span id="result-badge" class="badge">--</span>
+    </div>
+    <div class="result-meta">
+      <div class="result-meta-item">
+        <span class="result-meta-label">Fraud probability</span>
+        <span id="result-prob" class="result-meta-value">--</span>
+      </div>
+      <div class="result-meta-item">
+        <span class="result-meta-label">Risk level</span>
+        <span id="result-risk" class="result-meta-value">--</span>
+      </div>
+    </div>
+    <div class="probability-bar">
+      <div id="result-bar" class="probability-fill" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const sampleCache = {};
+
+async function loadSample(type) {
+  const res = await fetch(`/api/sample?type=${type}`);
+  const sample = await res.json();
+  document.getElementById('Amount').value = sample.Amount;
+  document.getElementById('hour_of_day').value = sample.hour_of_day;
+  for (let i = 1; i <= 28; i++) {
+    document.getElementById('V' + i).value = sample['V' + i];
+  }
+}
+
+function resetForm() {
+  document.getElementById('Amount').value = 0;
+  document.getElementById('hour_of_day').value = 12;
+  for (let i = 1; i <= 28; i++) {
+    document.getElementById('V' + i).value = 0;
+  }
+  document.getElementById('result').classList.remove('show', 'is-fraud', 'is-legit');
+}
+
+document.getElementById('predict-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const payload = {};
+  formData.forEach((value, key) => payload[key] = value);
+
+  const res = await fetch('/api/predict', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+
+  const resultEl = document.getElementById('result');
+  const isFraud = data.prediction === 'Fraud';
+
+  resultEl.classList.remove('is-fraud', 'is-legit');
+  resultEl.classList.add('show', isFraud ? 'is-fraud' : 'is-legit');
+
+  document.getElementById('result-verdict').textContent = isFraud ? 'Likely fraud' : 'Looks legitimate';
+  const badge = document.getElementById('result-badge');
+  badge.textContent = data.prediction;
+  badge.className = 'badge ' + (isFraud ? 'badge-fraud' : 'badge-legit');
+
+  document.getElementById('result-prob').textContent = (data.fraud_probability * 100).toFixed(2) + '%';
+  document.getElementById('result-risk').textContent = data.risk_level;
+
+  const bar = document.getElementById('result-bar');
+  bar.style.width = (data.fraud_probability * 100).toFixed(1) + '%';
+  bar.style.background = isFraud ? 'var(--danger)' : 'var(--safe)';
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,432 @@
+/* =============================================================
+   Vigil — Credit Card Fraud Detection
+   Design language: a quiet, technical "security console" --
+   graphite surfaces, one amber signal color for the brand/UI,
+   and two semantic colors (green/red) reserved ONLY for
+   legit/fraud results, never used decoratively.
+   ============================================================= */
+
+:root {
+  --bg: #0F1218;
+  --surface: #171B24;
+  --surface-raised: #1D222C;
+  --border: #2A2F3B;
+  --text: #E7E9EE;
+  --text-muted: #8A90A3;
+  --text-faint: #565C6D;
+
+  --amber: #E3A542;
+  --amber-dim: rgba(227, 165, 66, 0.14);
+  --safe: #3FB88A;
+  --safe-dim: rgba(63, 184, 138, 0.14);
+  --danger: #E0616B;
+  --danger-dim: rgba(224, 97, 107, 0.14);
+
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --radius: 8px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ---------- Shell layout ---------- */
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 28px 18px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px 28px 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  background: var(--amber-dim);
+  color: var(--amber);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(227, 165, 66, 0.35);
+}
+
+.brand-text { display: flex; flex-direction: column; }
+.brand-name { font-family: var(--font-display); font-weight: 600; font-size: 16px; }
+.brand-sub { font-size: 12px; color: var(--text-muted); }
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nav-item:hover { background: var(--surface-raised); color: var(--text); }
+
+.nav-item.active {
+  background: var(--amber-dim);
+  color: var(--amber);
+}
+
+.nav-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.sidebar-foot { padding-top: 16px; }
+
+.model-chip {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.model-chip-label { font-size: 11px; color: var(--text-faint); }
+.model-chip-value { font-family: var(--font-display); font-size: 13px; font-weight: 600; color: var(--text); }
+
+.content {
+  flex: 1;
+  padding: 40px 48px;
+  max-width: 1080px;
+}
+
+/* ---------- Page header ---------- */
+
+.page-head { margin-bottom: 32px; }
+.page-eyebrow { font-size: 13px; color: var(--amber); font-weight: 600; margin-bottom: 6px; }
+.page-title { font-family: var(--font-display); font-size: 28px; font-weight: 600; margin: 0 0 8px 0; }
+.page-desc { color: var(--text-muted); max-width: 60ch; margin: 0; }
+
+/* ---------- Cards / panels ---------- */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.panel + .panel { margin-top: 20px; }
+
+.panel-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  margin: 0 0 18px 0;
+}
+
+/* ---------- Forms ---------- */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field label {
+  font-size: 12px;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.field input, .field select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  width: 100%;
+}
+
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--amber);
+}
+
+.field-wide { grid-column: span 2; }
+
+.field-primary input {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.05s ease;
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn-primary { background: var(--amber); color: #1A1204; }
+.btn-primary:hover { opacity: 0.9; }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-ghost:hover { border-color: var(--text-muted); }
+
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+
+/* ---------- Result block ---------- */
+
+.result {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  display: none;
+}
+
+.result.show { display: block; }
+
+.result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.result-verdict {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.result.is-fraud { border-color: rgba(224, 97, 107, 0.4); background: var(--danger-dim); }
+.result.is-fraud .result-verdict { color: var(--danger); }
+
+.result.is-legit { border-color: rgba(63, 184, 138, 0.4); background: var(--safe-dim); }
+.result.is-legit .result-verdict { color: var(--safe); }
+
+.result-meta { display: flex; gap: 28px; }
+.result-meta-item { display: flex; flex-direction: column; gap: 2px; }
+.result-meta-label { font-size: 11px; color: var(--text-faint); }
+.result-meta-value { font-family: var(--font-display); font-weight: 600; font-size: 16px; }
+
+.probability-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg);
+  overflow: hidden;
+  margin-top: 14px;
+}
+.probability-fill { height: 100%; border-radius: 3px; }
+
+/* ---------- Badges / tags ---------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-fraud { background: var(--danger-dim); color: var(--danger); }
+.badge-legit { background: var(--safe-dim); color: var(--safe); }
+
+/* ---------- Sample transaction strip ---------- */
+
+.sample-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  flex-wrap: wrap;
+}
+
+.sample-strip-text { font-size: 13px; color: var(--text-muted); margin-right: auto; }
+
+/* ---------- Stat grid (dashboard) ---------- */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.stat-card.stat-danger { border-left-color: var(--danger); }
+.stat-card.stat-safe { border-left-color: var(--safe); }
+
+.stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+.stat-value { font-family: var(--font-display); font-size: 24px; font-weight: 700; }
+.stat-sub { font-size: 12px; color: var(--text-faint); margin-top: 4px; }
+
+.panel-row {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 20px;
+}
+
+/* ---------- Table ---------- */
+
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table th {
+  text-align: left;
+  color: var(--text-faint);
+  font-weight: 500;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+
+.data-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+
+/* ---------- Upload dropzone ---------- */
+
+.dropzone {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 36px 24px;
+  text-align: center;
+  background: var(--surface-raised);
+}
+
+.dropzone-title { font-family: var(--font-display); font-weight: 600; margin-bottom: 6px; }
+.dropzone-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; }
+
+.file-input-label {
+  display: inline-block;
+  padding: 9px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+.file-input-label:hover { border-color: var(--amber); }
+.file-name { margin-top: 10px; font-size: 12px; color: var(--text-muted); }
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(224, 97, 107, 0.4);
+  background: var(--danger-dim);
+  color: var(--danger);
+}
+
+.model-compare-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.model-compare-row:last-child { border-bottom: none; }
+.model-compare-name { font-weight: 500; }
+.model-compare-name.is-best { color: var(--amber); }
+.model-compare-score { font-family: var(--font-display); font-weight: 600; }
+
+@media (max-width: 900px) {
+  .shell { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; align-items: center; padding: 16px; }
+  .nav { flex-direction: row; }
+  .content { padding: 24px; }
+  .form-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .panel-row { grid-template-columns: 1fr; }
+}

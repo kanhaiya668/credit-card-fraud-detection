@@ -1,0 +1,6 @@
+data/*.csv
+__pycache__/
+*.pyc
+app/static/tmp/*.csv
+.DS_Store
+.venv/

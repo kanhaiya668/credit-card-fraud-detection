@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div class="page-eyebrow">Overview</div>
+  <h1 class="page-title">Model & dataset dashboard</h1>
+  <p class="page-desc">
+    Trained on {{ "{:,}".format(data.total_transactions) }} cleaned transactions
+    ({{ data.fraud_rate_pct }}% fraud). Metrics below are measured on a held-out
+    test set the model never saw during training.
+  </p>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total transactions</div>
+    <div class="stat-value">{{ "{:,}".format(data.total_transactions) }}</div>
+  </div>
+  <div class="stat-card stat-danger">
+    <div class="stat-label">Fraud cases</div>
+    <div class="stat-value">{{ data.fraud_count }}</div>
+    <div class="stat-sub">{{ data.fraud_rate_pct }}% of all transactions</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Avg. fraud amount</div>
+    <div class="stat-value">${{ data.avg_fraud_amount }}</div>
+    <div class="stat-sub">vs ${{ data.avg_legit_amount }} for legit</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Model precision</div>
+    <div class="stat-value">{{ (metrics.model_comparison | selectattr('model','equalto',metrics.best_model) | first).precision * 100 }}%</div>
+    <div class="stat-sub">of fraud alerts are correct</div>
+  </div>
+</div>
+
+<div class="panel-row">
+  <div class="panel">
+    <h2 class="panel-title">Fraud rate by hour of day</h2>
+    <canvas id="hourlyChart" height="220"></canvas>
+  </div>
+  <div class="panel">
+    <h2 class="panel-title">Model comparison (PR-AUC)</h2>
+    {% for m in metrics.model_comparison | sort(attribute='pr_auc', reverse=True) %}
+    <div class="model-compare-row">
+      <span class="model-compare-name {{ 'is-best' if m.model == metrics.best_model }}">
+        {{ m.model.replace('_', ' ') }}{{ ' (selected)' if m.model == metrics.best_model }}
+      </span>
+      <span class="model-compare-score">{{ m.pr_auc }}</span>
+    </div>
+    {% endfor %}
+    <div style="margin-top:18px; font-size:12px; color:var(--text-faint);">
+      PR-AUC (precision-recall AUC) is used to pick the winner instead of accuracy,
+      since 99.8% accuracy is trivial to achieve by predicting "legit" every time
+      on this dataset -- PR-AUC focuses specifically on how well fraud is caught.
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2 class="panel-title">Transaction amount vs. fraud</h2>
+  <canvas id="amountChart" height="110"></canvas>
+</div>
+
+<div class="panel">
+  <h2 class="panel-title">Selected model: {{ metrics.best_model.replace('_', ' ') }}</h2>
+  <div class="stat-grid" style="grid-template-columns: repeat(4, 1fr);">
+    {% set best = metrics.model_comparison | selectattr('model','equalto',metrics.best_model) | first %}
+    <div class="stat-card">
+      <div class="stat-label">Precision</div>
+      <div class="stat-value">{{ (best.precision * 100) | round(1) }}%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Recall</div>
+      <div class="stat-value">{{ (best.recall * 100) | round(1) }}%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">F1 score</div>
+      <div class="stat-value">{{ best.f1_score }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">ROC-AUC</div>
+      <div class="stat-value">{{ best.roc_auc }}</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const hourlyData = {{ data.hourly_pattern | tojson }};
+const amountData = {{ data.amount_distribution | tojson }};
+
+Chart.defaults.color = '#8A90A3';
+Chart.defaults.font.family = 'Inter';
+Chart.defaults.borderColor = '#2A2F3B';
+
+new Chart(document.getElementById('hourlyChart'), {
+  type: 'line',
+  data: {
+    labels: hourlyData.map(d => d.hour + ':00'),
+    datasets: [{
+      label: 'Fraud rate (%)',
+      data: hourlyData.map(d => (d.fraud_rate * 100).toFixed(3)),
+      borderColor: '#E3A542',
+      backgroundColor: 'rgba(227,165,66,0.12)',
+      fill: true,
+      tension: 0.3,
+      pointRadius: 2,
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { title: { display: true, text: 'Fraud rate (%)' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+new Chart(document.getElementById('amountChart'), {
+  type: 'bar',
+  data: {
+    labels: amountData.map(d => '$' + d.bucket),
+    datasets: [
+      {
+        label: 'Total transactions',
+        data: amountData.map(d => d.total),
+        backgroundColor: 'rgba(138,144,163,0.35)',
+        yAxisID: 'y',
+      },
+      {
+        label: 'Fraud cases',
+        data: amountData.map(d => d.fraud_count),
+        backgroundColor: '#E0616B',
+        yAxisID: 'y1',
+      }
+    ]
+  },
+  options: {
+    plugins: { legend: { position: 'top', labels: { boxWidth: 10 } } },
+    scales: {
+      y: { type: 'logarithmic', position: 'left', title: { display: true, text: 'Total (log scale)' } },
+      y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Fraud cases' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+
+{% endblock %}

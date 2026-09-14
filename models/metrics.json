@@ -1,0 +1,100 @@
+{
+  "best_model": "hist_gradient_boosting",
+  "feature_order": [
+    "V1",
+    "V2",
+    "V3",
+    "V4",
+    "V5",
+    "V6",
+    "V7",
+    "V8",
+    "V9",
+    "V10",
+    "V11",
+    "V12",
+    "V13",
+    "V14",
+    "V15",
+    "V16",
+    "V17",
+    "V18",
+    "V19",
+    "V20",
+    "V21",
+    "V22",
+    "V23",
+    "V24",
+    "V25",
+    "V26",
+    "V27",
+    "V28",
+    "scaled_amount",
+    "amount_log",
+    "hour_of_day"
+  ],
+  "dataset_rows_after_cleaning": 283726,
+  "fraud_rate_full_dataset": 0.001667,
+  "train_rows_after_smote": 260592,
+  "test_rows": 56746,
+  "model_comparison": [
+    {
+      "model": "logistic_regression",
+      "precision": 0.0533,
+      "recall": 0.8737,
+      "f1_score": 0.1005,
+      "roc_auc": 0.9623,
+      "pr_auc": 0.6903,
+      "confusion_matrix": [
+        [
+          55177,
+          1474
+        ],
+        [
+          12,
+          83
+        ]
+      ],
+      "train_seconds": 2.2
+    },
+    {
+      "model": "random_forest",
+      "precision": 0.7379,
+      "recall": 0.8,
+      "f1_score": 0.7677,
+      "roc_auc": 0.9763,
+      "pr_auc": 0.798,
+      "confusion_matrix": [
+        [
+          56624,
+          27
+        ],
+        [
+          19,
+          76
+        ]
+      ],
+      "train_seconds": 266.0
+    },
+    {
+      "model": "hist_gradient_boosting",
+      "precision": 0.9036,
+      "recall": 0.7895,
+      "f1_score": 0.8427,
+      "roc_auc": 0.9688,
+      "pr_auc": 0.812,
+      "confusion_matrix": [
+        [
+          56643,
+          8
+        ],
+        [
+          20,
+          75
+        ]
+      ],
+      "train_seconds": 13.2
+    }
+  ],
+  "total_pipeline_seconds": 288.7
+}

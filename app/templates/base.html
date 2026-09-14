@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Vigil{% endblock %} · Vigil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">V</span>
+      <div class="brand-text">
+        <span class="brand-name">Vigil</span>
+        <span class="brand-sub">Fraud detection</span>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a href="{{ url_for('home') }}" class="nav-item {{ 'active' if active_page == 'check' }}">
+        <span class="nav-dot"></span>Check transaction
+      </a>
+      <a href="{{ url_for('bulk') }}" class="nav-item {{ 'active' if active_page == 'bulk' }}">
+        <span class="nav-dot"></span>Bulk upload
+      </a>
+      <a href="{{ url_for('dashboard') }}" class="nav-item {{ 'active' if active_page == 'dashboard' }}">
+        <span class="nav-dot"></span>Dashboard
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="model-chip">
+        <span class="model-chip-label">Active model</span>
+        <span class="model-chip-value">{{ active_model_name }}</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+</body>
+</html>
